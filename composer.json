@@ -1,0 +1,44 @@
+{
+  "name": "elenyum/authorization",
+  "version": "1.0",
+  "type": "symfony-bundle",
+  "description": "This bundle oauth authorization in controller.",
+  "keywords": ["creator", "generated-code", "auto"],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Elenyum",
+      "homepage": "https://elenyum.ru/bundles/authorization"
+    }
+  ],
+  "require": {
+    "php": ">=8.1",
+    "ext-json": "*",
+    "symfony/console": "^5.4|^6.0|^7.0",
+    "symfony/framework-bundle": "^5.4.24|^6.0|^7.0",
+    "symfony/options-resolver": "^7.0",
+    "symfony/property-info": "^7.0",
+    "symfony/validator": "^7.0",
+    "zircote/swagger-php": "^4.2.15",
+    "lexik/jwt-authentication-bundle": "v3.1.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^11.0",
+    "symfony/browser-kit": "^7.0",
+    "symfony/css-selector": "^7.0",
+    "symfony/phpunit-bridge": "^7.0"
+  },
+  "config": {
+    "sort-packages": true
+  },
+  "autoload": {
+    "psr-4": {
+      "Elenyum\\Authorization\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Elenyum\\Authorization\\Tests\\": "tests/"
+    }
+  }
+}
