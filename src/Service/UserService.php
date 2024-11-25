@@ -64,7 +64,7 @@ class UserService implements UserServiceInterface
     public function add(string $data): User
     {
         $context = [
-            'allow_extra_attributes' => false,
+            'allow_extra_attributes' => true,
         ];
 
         /** @var User $user */

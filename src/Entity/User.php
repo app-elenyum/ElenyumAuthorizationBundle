@@ -8,6 +8,7 @@ use Elenyum\Authorization\Repository\UserRepository;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -15,40 +16,44 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[UniqueEntity(fields: ['login'], message: 'There is already an account with this login')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    public const STATUS_PENDING = 'pending'; // в ожидание например для новых пользователей
-    public const STATUS_ACTIVE = 'active'; // Пользователь подтвержден
-    public const STATUS_BLOCKED = 'blocked'; // Пользователь заблокирован
-    public const STATUS_INACTIVE = 'inactive'; // Пользователь не активен
-
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['RegResponse'])]
     private ?int $id = null;
 
     #[Assert\Length(min: 1, max: 200)]
     #[ORM\Column(length: 180)]
+    #[Groups(['Default', 'RegResponse'])]
     private ?string $login;
 
     #[Assert\Length(min: 1, max: 50)]
     #[ORM\Column(length: 50)]
-    private ?string $status;
+    #[Groups(['Default'])]
+    private ?UserStatus $status;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['Default'])]
     private ?string $fname = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['Default'])]
     private ?string $lname = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['Default'])]
     private ?string $mname = null;
 
     #[ORM\Column]
+    #[Groups(['Default'])]
     private array $roles;
 
     #[ORM\Column(length: 64, nullable: false)]
+    #[Groups(['Default'])]
     private string $password;
 
     #[ORM\Column]
+    #[Groups(['RegResponse'])]
     private DateTimeImmutable $createAt;
 
     #[ORM\Column(nullable: true)]
@@ -57,7 +62,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct()
     {
         $this->setCreateAt(new DateTimeImmutable());
-        $this->setStatus(self::STATUS_ACTIVE);
+        $this->setStatus(UserStatus::Active);
     }
 
     public function getId(): ?int
@@ -77,14 +82,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function getStatus(): string
     {
-        return $this->status;
+        return $this->status->value;
     }
 
-    public function setStatus(?string $status): User
+    public function setStatus(UserStatus|string|null $status): User
     {
-        $this->status = $status;
+        if ($status instanceof UserStatus) {
+            $this->status = $status;
+        }
 
         return $this;
     }

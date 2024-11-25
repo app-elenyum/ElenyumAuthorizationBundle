@@ -38,8 +38,6 @@ class AttributeAuthorizationListener implements EventSubscriberInterface
             return;
         }
 
-//        $request = $event->getRequest();
-//        $arguments = $event->getNamedArguments();
         $controllerBaseName = basename(str_replace('\\', '/', get_class((object) $event->getController())));
         $method = $this->getHttpMethodFromClassName($controllerBaseName);
         $user = $this->security->getUser();
@@ -66,20 +64,27 @@ class AttributeAuthorizationListener implements EventSubscriberInterface
     }
 
     /**
+     * Получает группы сущностей из атрибута Groups
+     *
      * @param string $entityClass
-     * @return array -  entity groups
+     * @return array - Группы сущности
      * @throws \ReflectionException
      */
     private function getEntityGroups(string $entityClass): array
     {
         $reflectionClass = new ReflectionClass($entityClass);
-
         $attributeGroups = $reflectionClass->getAttributes(Groups::class);
-        if (isset($attributeGroups[0]) && isset($attributeGroups[0]?->getArguments()[0])) {
-            return $attributeGroups[0]->getArguments()[0];
+
+        // Проверяем, есть ли хотя бы один атрибут Groups
+        if (empty($attributeGroups)) {
+            return []; // Возвращаем пустой массив, если атрибутов нет
         }
 
-        return [];
+        // Извлекаем аргументы из всех найденных атрибутов
+        $groups = array_map(fn($attr) => $attr->getArguments()[0] ?? [], $attributeGroups);
+
+        // Объединяем все группы в один массив и убираем дубликаты
+        return array_unique(array_merge(...$groups));
     }
 
     private function getHttpMethodFromClassName(string $className): ?string
