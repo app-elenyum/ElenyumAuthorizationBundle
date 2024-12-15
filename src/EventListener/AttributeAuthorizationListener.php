@@ -9,7 +9,6 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ControllerArgumentsEvent;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Serializer\Attribute\Groups;
 
@@ -38,8 +37,6 @@ class AttributeAuthorizationListener implements EventSubscriberInterface
             return;
         }
 
-        $controllerBaseName = basename(str_replace('\\', '/', get_class((object) $event->getController())));
-        $method = $this->getHttpMethodFromClassName($controllerBaseName);
         $user = $this->security->getUser();
 
         if (!$user) {
@@ -48,10 +45,6 @@ class AttributeAuthorizationListener implements EventSubscriberInterface
 
         foreach ($attributes as $attribute) {
             $model = $attribute->model;
-
-            if ($method === null) {
-                throw new HttpException(404, 'Undefined type for get groups');
-            }
 
             $groups = $this->getEntityGroups($model);
             if (!empty($groups) && !in_array('default', $groups)) {
@@ -85,45 +78,5 @@ class AttributeAuthorizationListener implements EventSubscriberInterface
 
         // Объединяем все группы в один массив и убираем дубликаты
         return array_unique(array_merge(...$groups));
-    }
-
-    private function getHttpMethodFromClassName(string $className): ?string
-    {
-        // Определяем возможные методы
-        $methods = ['GET', 'POST', 'PUT', 'DELETE'];
-
-        // Проверяем специальный случай для "List"
-        if (str_contains($className, 'List')) {
-            return 'GET';
-        }
-
-        // Ищем метод в названии класса
-        foreach ($methods as $method) {
-            if (str_contains($className, $method)) {
-                return $method;
-            }
-        }
-
-        // Возвращаем пустую строку или какое-то значение по умолчанию, если метод не найден
-        return null;
-    }
-
-    private function getGroupIntersections(array $groups, array $userRoles): array
-    {
-        // Создаем массив для хранения найденных пересечений
-        $intersections = [];
-
-        // Проходим по каждому элементу массива групп
-        foreach ($groups as $group) {
-            // Проверяем каждый элемент на наличие соответствующего ключа в массиве ролей
-            foreach ($userRoles as $role) {
-                if (str_contains($group, "$role")) {
-                    $intersections[] = $group;
-                    break;
-                }
-            }
-        }
-
-        return $intersections;
     }
 }

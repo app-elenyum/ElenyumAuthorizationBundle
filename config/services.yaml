@@ -9,6 +9,9 @@ services:
   elenyum_login:
     public: true
     class: 'Elenyum\Authorization\Controller\LoginController'
+  elenyum_check:
+    public: true
+    class: 'Elenyum\Authorization\Controller\CheckController'
   elenyum_registration:
     public: true
     class: 'Elenyum\Authorization\Controller\RegistrationController'

@@ -31,7 +31,6 @@ class AddUserCommand extends Command
     {
         $this
             ->setDescription('Generate specification in OpenAPI, format: json')
-            ->addOption('name', 'na', InputOption::VALUE_OPTIONAL, 'name user', null)
             ->addOption('login', 'l', InputOption::VALUE_OPTIONAL, 'email login', null)
             ->addOption('password', 'p', InputOption::VALUE_OPTIONAL, 'password user', null);
     }
@@ -50,8 +49,6 @@ class AddUserCommand extends Command
         }
 
         $user = new User();
-        $user->setFname($name);
-        $user->setLname($name);
         $user->setLogin($login);
         $user->setRoles(['adm']);
 

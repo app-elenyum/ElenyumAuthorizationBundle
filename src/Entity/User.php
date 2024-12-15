@@ -32,18 +32,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['Default'])]
     private ?UserStatus $status;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['Default'])]
-    private ?string $fname = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['Default'])]
-    private ?string $lname = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['Default'])]
-    private ?string $mname = null;
-
     #[ORM\Column]
     #[Groups(['Default'])]
     private array $roles;
@@ -92,42 +80,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if ($status instanceof UserStatus) {
             $this->status = $status;
         }
-
-        return $this;
-    }
-
-    public function getFname(): ?string
-    {
-        return $this->fname;
-    }
-
-    public function setFname(?string $fname): User
-    {
-        $this->fname = $fname;
-
-        return $this;
-    }
-
-    public function getLname(): ?string
-    {
-        return $this->lname;
-    }
-
-    public function setLname(?string $lname): User
-    {
-        $this->lname = $lname;
-
-        return $this;
-    }
-
-    public function getMname(): ?string
-    {
-        return $this->mname;
-    }
-
-    public function setMname(?string $mname): User
-    {
-        $this->mname = $mname;
 
         return $this;
     }

@@ -20,6 +20,10 @@
     "symfony/property-info": "^7.0",
     "symfony/validator": "^7.0",
     "zircote/swagger-php": "^4.2.15",
+    "doctrine/dbal": "^3",
+    "doctrine/doctrine-bundle": "^2.11",
+    "doctrine/doctrine-migrations-bundle": "^3.3",
+    "doctrine/orm": "^3.0",
     "lexik/jwt-authentication-bundle": "v3.1.0"
   },
   "require-dev": {
