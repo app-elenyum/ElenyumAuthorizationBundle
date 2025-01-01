@@ -46,7 +46,14 @@ class AttributeAuthorizationListener implements EventSubscriberInterface
         foreach ($attributes as $attribute) {
             $model = $attribute->model;
 
-            $groups = $this->getEntityGroups($model);
+            //@todo надо провреять доступ не только entity но и к id при удаление и обнавление записи
+            $method = $event->getRequest()->getMethod();
+            $groups = [];
+            if ($method === 'DELETE' || $method === 'PUT') {
+                $groups = $this->getGroupsById($model);
+            } else {
+                $groups = $this->getEntityGroups($model);
+            }
             if (!empty($groups) && !in_array('default', $groups)) {
                 $roles = array_intersect($groups, $user->getRoles());
                 if (empty($roles)) {
@@ -77,6 +84,59 @@ class AttributeAuthorizationListener implements EventSubscriberInterface
         $groups = array_map(fn($attr) => $attr->getArguments()[0] ?? [], $attributeGroups);
 
         // Объединяем все группы в один массив и убираем дубликаты
+        return array_unique(array_merge(...$groups));
+    }
+
+    /**
+     * @param string $model
+     * @return array
+     * @throws \ReflectionException
+     */
+    private function getGroupsById(string $model): array
+    {
+        $reflectionClass = new ReflectionClass($model);
+
+        // Проверяем, существует ли свойство id
+        if (!$reflectionClass->hasProperty('id')) {
+            return [];
+        }
+
+        $property = $reflectionClass->getProperty('id');
+        $attributeGroups = $property->getAttributes(Groups::class);
+
+        // Извлекаем группы из атрибутов, если они есть
+        if (empty($attributeGroups)) {
+            return [];
+        }
+
+        $groups = array_map(fn($attr) => $attr->getArguments()[0] ?? [], $attributeGroups);
+
+        return $this->removeHttpPrefixes(array_unique(array_merge(...$groups)));
+    }
+
+    private function removeHttpPrefixes(array $groups): array
+    {
+        return array_map(fn($group) => preg_replace('/^(DELETE_|PUT_|POST_|GET_)/', '', $group), $groups);
+    }
+
+    /**
+     * @param string $model
+     * @return array
+     * @throws \ReflectionException
+     */
+    private function getGroupsFromAllProperties(string $model): array
+    {
+        $reflectionClass = new ReflectionClass($model);
+        $groups = [];
+
+        foreach ($reflectionClass->getProperties() as $property) {
+            $attributeGroups = $property->getAttributes(Groups::class);
+
+            if (!empty($attributeGroups)) {
+                $groups = array_merge($groups, array_map(fn($attr) => $attr->getArguments()[0] ?? [], $attributeGroups));
+            }
+        }
+
         return array_unique(array_merge(...$groups));
     }
 }
