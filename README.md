@@ -1,32 +1,31 @@
-
 # ElenyumAuthorizationBundle
 
-**ElenyumAuthorizationBundle** предоставляет механизм для создания сущности `User`, настройки авторизации пользователей и добавления атрибутов для контроллеров, позволяющих управлять доступом к методам.
+**ElenyumAuthorizationBundle** provides a mechanism for creating the `User` entity, configuring user authorization, and adding attributes to controllers to manage access to methods.
 
-## Установка
+## Installation
 
-Установите пакет с помощью Composer:
+Install the package using Composer:
 
 ```bash
 composer require elenyum/authorization
 ```
 
-### Требования
+### Requirements
 
-Этот пакет требует следующие зависимости:
+This package requires the following dependencies:
 - PHP >= 8.1
-- Symfony компоненты:
-    - `symfony/console` ^5.4|^6.0|^7.0
-    - `symfony/framework-bundle` ^5.4.24|^6.0|^7.0
-    - `symfony/options-resolver` ^7.0
-    - `symfony/property-info` ^7.0
-    - `symfony/validator` ^7.0
+- Symfony components:
+  - `symfony/console` ^5.4|^6.0|^7.0
+  - `symfony/framework-bundle` ^5.4.24|^6.0|^7.0
+  - `symfony/options-resolver` ^7.0
+  - `symfony/property-info` ^7.0
+  - `symfony/validator` ^7.0
 - `zircote/swagger-php` ^4.2.15
 - `lexik/jwt-authentication-bundle` v3.1.0
 
-## Конфигурация
+## Configuration
 
-Дополнительная конфигурация не требуется. Однако, перед использованием необходимо добавить конфигурацию в `doctrine.yaml` для активации маппинга сущностей:
+No additional configuration is required. However, before use, you need to add configuration to `doctrine.yaml` to activate entity mapping:
 
 ```yaml
 doctrine:
@@ -37,15 +36,15 @@ doctrine:
                 alias: ElenyumAuthorizationBundle
 ```
 
-Затем запустите миграции для создания необходимых таблиц:
+Then run migrations to create the necessary tables:
 
 ```bash
 php bin/console doctrine:migrations:migrate
 ```
 
-## Использование атрибута `Auth`
+## Using the `Auth` Attribute
 
-Этот пакет добавляет атрибут `Auth`, который можно использовать в контроллерах для ограничения доступа:
+This package adds the `Auth` attribute, which can be used in controllers to restrict access:
 
 ```php
 use Elenyum\Authorization\Attribute\Auth;
@@ -54,18 +53,18 @@ use App\Entity\Figure;
 #[Auth(name: 'Bearer', model: Figure::class)]
 public function someAction()
 {
-    // Логика действия
+    // Action logic
 }
 ```
 
-- `name`: Имя метода авторизации (используется в документации).
-- `model`: Класс сущности, к которой будет применено ограничение по доступу на основе ролей.
+- `name`: The name of the authorization method (used in documentation).
+- `model`: The entity class to which the access restriction will be applied based on roles.
 
-## Настройка бизнес-логики доступа через Voter
+## Configuring Business Logic Access with Voter
 
-Для более гибкой настройки правил доступа к сущностям рекомендуется использовать `Voter` в Symfony. Это позволяет реализовать проверку, которая выходит за рамки базовой проверки ролей и может учитывать дополнительные бизнес-правила, например, ограничение доступа только к записям, созданным текущим пользователем.
+For more flexible access rules to entities, it is recommended to use a `Voter` in Symfony. This allows you to implement checks that go beyond basic role verification and can consider additional business rules, such as restricting access to records created by the current user.
 
-Пример создания Voter для проверки владельца записи:
+Example of creating a Voter to check record ownership:
 
 ```php
 namespace App\Security\Voter;
@@ -82,7 +81,7 @@ class FigureVoter extends Voter
 
     public function __construct(Security $security)
     {
-        this->security = $security;
+        $this->security = $security;
     }
 
     protected function supports(string $attribute, $subject): bool
@@ -97,15 +96,15 @@ class FigureVoter extends Voter
             return false;
         }
 
-        // Проверка, что пользователь является владельцем записи
+        // Check if the user is the owner of the record
         return $subject->getOwnerId() === $user->getId();
     }
 }
 ```
 
-### Применение Voter
+### Applying Voter
 
-Чтобы использовать `Voter`, вызовите его через `isGranted` в контроллере или настройте атрибут для проверки:
+To use the `Voter`, call it via `isGranted` in the controller or configure the attribute for verification:
 
 ```php
 if (!$this->isGranted('EDIT', $figure)) {
@@ -113,4 +112,5 @@ if (!$this->isGranted('EDIT', $figure)) {
 }
 ```
 
-Использование `Voter` помогает отделить бизнес-логику доступа от основного авторизационного механизма, поддерживая принцип единой ответственности и повышая читаемость и масштабируемость кода.
+Using a `Voter` helps separate business access logic from the main authorization mechanism, adhering to the single responsibility principle and improving code readability and scalability.
+

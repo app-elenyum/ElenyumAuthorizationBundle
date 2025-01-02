@@ -12,7 +12,6 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Serializer\Attribute\Groups;
 
-
 class AttributeAuthorizationListener implements EventSubscriberInterface
 {
     private $security;
@@ -38,9 +37,9 @@ class AttributeAuthorizationListener implements EventSubscriberInterface
         }
 
         $user = $this->security->getUser();
-
-        if (!$user) {
-            throw new AccessDeniedHttpException('Access denied. Authorization required.');
+        $roles = ['public'];
+        if (!empty($user) && !empty($user->getRoles())) {
+            $roles = array_merge($roles, $user->getRoles());
         }
 
         foreach ($attributes as $attribute) {
@@ -52,39 +51,15 @@ class AttributeAuthorizationListener implements EventSubscriberInterface
             if ($method === 'DELETE' || $method === 'PUT') {
                 $groups = $this->getGroupsById($model);
             } else {
-                $groups = $this->getEntityGroups($model);
+                $groups = $this->getGroupsFromAllProperties($model, $method);
             }
             if (!empty($groups) && !in_array('default', $groups)) {
-                $roles = array_intersect($groups, $user->getRoles());
-                if (empty($roles)) {
+                $rolesIntersect = array_intersect($groups, $roles);
+                if (empty($rolesIntersect)) {
                     throw new AccessDeniedHttpException('Role denied. Authorization required.');
                 }
             }
         }
-    }
-
-    /**
-     * Получает группы сущностей из атрибута Groups
-     *
-     * @param string $entityClass
-     * @return array - Группы сущности
-     * @throws \ReflectionException
-     */
-    private function getEntityGroups(string $entityClass): array
-    {
-        $reflectionClass = new ReflectionClass($entityClass);
-        $attributeGroups = $reflectionClass->getAttributes(Groups::class);
-
-        // Проверяем, есть ли хотя бы один атрибут Groups
-        if (empty($attributeGroups)) {
-            return []; // Возвращаем пустой массив, если атрибутов нет
-        }
-
-        // Извлекаем аргументы из всех найденных атрибутов
-        $groups = array_map(fn($attr) => $attr->getArguments()[0] ?? [], $attributeGroups);
-
-        // Объединяем все группы в один массив и убираем дубликаты
-        return array_unique(array_merge(...$groups));
     }
 
     /**
@@ -114,17 +89,13 @@ class AttributeAuthorizationListener implements EventSubscriberInterface
         return $this->removeHttpPrefixes(array_unique(array_merge(...$groups)));
     }
 
-    private function removeHttpPrefixes(array $groups): array
-    {
-        return array_map(fn($group) => preg_replace('/^(DELETE_|PUT_|POST_|GET_)/', '', $group), $groups);
-    }
-
     /**
      * @param string $model
+     * @param string|null $method
      * @return array
      * @throws \ReflectionException
      */
-    private function getGroupsFromAllProperties(string $model): array
+    private function getGroupsFromAllProperties(string $model, ?string $method = null): array
     {
         $reflectionClass = new ReflectionClass($model);
         $groups = [];
@@ -133,10 +104,27 @@ class AttributeAuthorizationListener implements EventSubscriberInterface
             $attributeGroups = $property->getAttributes(Groups::class);
 
             if (!empty($attributeGroups)) {
-                $groups = array_merge($groups, array_map(fn($attr) => $attr->getArguments()[0] ?? [], $attributeGroups));
+                $propertyGroups = array_map(fn($attr) => $attr->getArguments()[0] ?? [], $attributeGroups);
+                $flattenedGroups = array_merge(...$propertyGroups);
+
+                if ($method) {
+                    $filteredGroups = array_filter($flattenedGroups, fn($group) => str_starts_with($group, strtoupper($method) . '_'));
+                    $groups = array_merge($groups, $filteredGroups);
+                } else {
+                    $groups = array_merge($groups, $flattenedGroups);
+                }
             }
         }
 
-        return array_unique(array_merge(...$groups));
+        return array_unique($this->removeHttpPrefixes($groups));
+    }
+
+    /**
+     * @param array $groups
+     * @return array
+     */
+    private function removeHttpPrefixes(array $groups): array
+    {
+        return array_map(fn($group) => preg_replace('/^(DELETE_|PUT_|POST_|GET_)/', '', $group), $groups);
     }
 }
