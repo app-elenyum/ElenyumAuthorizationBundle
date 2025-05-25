@@ -22,7 +22,7 @@ use Throwable;
     content: new OA\JsonContent(properties: [
         new OA\Property(property: 'message', type: 'string', default: 'ok'),
         new OA\Property(property: 'success', type: 'boolean', default: true),
-        new OA\Property(property: 'item', ref: new Model(type: User::class, groups: ['RegResponse'], options: ['method' => 'GET']
+        new OA\Property(property: 'item', ref: new Model(type: User::class, groups: ['user'], options: ['method' => 'GET']
         )),
     ]),
 )]
@@ -47,7 +47,7 @@ class RegistrationController extends AbstractController
                 'item' => [
                     'id' => $item->getId(),
                     'login' => $item->getLogin(),
-                    'createAt' => $item->getCreateAt()
+                    'createdAt' => $item->getCreatedAt()
                 ]
             ], Response::HTTP_OK);
         } catch (Throwable $e) {

@@ -4,6 +4,8 @@ namespace Elenyum\Authorization\Controller;
 
 
 use Elenyum\Authorization\Entity\User;
+use Elenyum\Authorization\Repository\UserRepository;
+use Elenyum\Authorization\Service\UserService;
 use Elenyum\OpenAPI\Attribute\Model;
 use Elenyum\OpenAPI\Attribute\Tag;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -34,10 +36,11 @@ use Throwable;
 )]
 class CheckController extends AbstractController
 {
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $request, UserRepository $repository): JsonResponse
     {
         /** @var User|null $item */
         $item = $this->getUser();
+
         try {
             if($item instanceof User) {
                 return $this->json([
@@ -46,7 +49,8 @@ class CheckController extends AbstractController
                     'user' => [
                         'id' => $item->getId(),
                         'login' => $item->getLogin(),
-                        'createAt' => $item->getCreateAt(),
+                        'name' => $item->getName(),
+                        'createdAt' => $item->getCreatedAt(),
                         'roles' => $item->getRoles()
                     ]
                 ], Response::HTTP_OK);

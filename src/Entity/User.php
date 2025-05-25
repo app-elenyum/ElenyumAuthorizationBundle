@@ -19,37 +19,42 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['RegResponse'])]
+    #[Groups(['POST_user', 'GET_user', 'PUT_user'])]
     private ?int $id = null;
 
     #[Assert\Length(min: 1, max: 200)]
     #[ORM\Column(length: 180)]
-    #[Groups(['Default', 'RegResponse'])]
+    #[Groups(['Default', 'POST_user', 'GET_user', 'PUT_user'])]
     private ?string $login;
+
+    #[ORM\Column(name: 'name', type: 'string', nullable: true)]
+    #[Groups(['Default', 'POST_user', 'GET_user', 'PUT_user'])]
+    public ?string $name = null;
 
     #[Assert\Length(min: 1, max: 50)]
     #[ORM\Column(length: 50)]
-    #[Groups(['Default'])]
+    #[Groups(['Default', 'GET_user'])]
     private ?UserStatus $status;
 
     #[ORM\Column]
-    #[Groups(['Default'])]
+    #[Groups(['Default', 'GET_user'])]
     private array $roles;
 
     #[ORM\Column(length: 64, nullable: false)]
-    #[Groups(['Default'])]
+    #[Groups(['Default', 'POST_user', 'GET_user', 'PUT_user'])]
     private string $password;
 
     #[ORM\Column]
-    #[Groups(['RegResponse'])]
-    private DateTimeImmutable $createAt;
+    #[Groups(['inner', 'GET_user'])]
+    private DateTimeImmutable $createdAt;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['inner', 'GET_user'])]
     private ?DateTimeImmutable $updatedAt = null;
 
     public function __construct()
     {
-        $this->setCreateAt(new DateTimeImmutable());
+        $this->setCreatedAt(new DateTimeImmutable());
         $this->setStatus(UserStatus::Active);
     }
 
@@ -66,6 +71,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setLogin(?string $login): User
     {
         $this->login = $login;
+
+        return $this;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): User
+    {
+        $this->name = $name;
 
         return $this;
     }
@@ -108,14 +125,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getCreateAt(): DateTimeImmutable
+    public function getCreatedAt(): DateTimeImmutable
     {
-        return $this->createAt;
+        return $this->createdAt;
     }
 
-    public function setCreateAt(DateTimeImmutable $createAt): User
+    public function setCreatedAt(DateTimeImmutable $createdAt): User
     {
-        $this->createAt = $createAt;
+        $this->createdAt = $createdAt;
 
         return $this;
     }
