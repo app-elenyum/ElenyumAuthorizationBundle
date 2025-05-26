@@ -76,6 +76,7 @@ class UserService implements UserServiceInterface
                 $user->getPassword()
             )
         );
+        $user->addRole('user');
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
