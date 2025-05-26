@@ -12,7 +12,7 @@ class UserController extends AbstractController
 {
     public function __invoke(Request $request, UserServiceInterface $service): JsonResponse
     {
-        if (!in_array("user", $this->getUser()->getRoles())) {
+        if (!in_array("user", $this->getUser()?->getRoles() ?? [])) {
             throw $this->createAccessDeniedException();
         }
 
