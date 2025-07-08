@@ -56,9 +56,8 @@ class UserController extends AbstractController
                 if (!empty($query['filters']['global']['value'])) {
                     $filter = "{login:{$query['filters']['global']['value']}}";
                 }
-                $total = $service->getTotal($filter);
 
-                $items = $service->getItems($filter, $orderBy, $limit, $offset);
+                [$items, $total] = $service->getItems($filter, $orderBy, $limit, $offset);
 
                 return $this->json([
                     'success' => true,
@@ -71,13 +70,13 @@ class UserController extends AbstractController
                 ]);
             } else {
                 return $this->json([
-                    'success' => true,
+                    'success' => false,
                     'error' => 'Undefined method: '.$request->getMethod(),
                 ]);
             }
         } catch (Exception $e) {
             return $this->json([
-                'success' => true,
+                'success' => false,
                 'error' => $e->getMessage(),
             ]);
         }

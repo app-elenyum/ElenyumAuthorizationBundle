@@ -26,14 +26,7 @@ class UserService implements UserServiceInterface
         $filter = $this->prepareJsonFormat($filter) ?? [];
         $orderBy = $this->prepareJsonFormat($orderBy) ?? [];
 
-        return $this->repository->findBy($filter, $orderBy, $limit, $offset);
-    }
-
-    public function getTotal(string $filter): int
-    {
-        $filter = $this->prepareJsonFormat($filter) ?? [];
-
-        return $this->repository->count($filter);
+        return $this->repository->findWithCount($filter, $orderBy, $limit, $offset);
     }
 
     /**
